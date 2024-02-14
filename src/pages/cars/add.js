@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Input, Button } from "@nextui-org/react";
+import { useRouter } from "next/router";
+
 
 export default function UpsertCars() {
+    const router = useRouter();
     let [req, setReq] = useState({
         car_name: "",
         day_rate: 0,
@@ -49,7 +52,7 @@ export default function UpsertCars() {
                     }
                 />
                 <div className="flex flex-row justify-end">
-                        <Button color="default">
+                        <Button color="default" onClick={() => router.push('/cars')}>
                             Kembali
                         </Button>
                         <Button color="success" className="ml-5">

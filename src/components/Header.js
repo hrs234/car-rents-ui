@@ -1,8 +1,8 @@
+import Link from "next/link"
 
 export default function Header({ isHome=true }) {
     return(
         <div className="min-h-full">
-            
             <nav className="bg-gray-600">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
@@ -14,7 +14,9 @@ export default function Header({ isHome=true }) {
                                 { isHome ? 
                                     <div className="ml-10 flex items-baseline space-x-4">
                                         <div className="text-gray-300">
-                                            Rental Mobil
+                                            <Link href="/">
+                                                Rental Mobil
+                                            </Link>
                                         </div>
                                     </div> 
                                     : 
