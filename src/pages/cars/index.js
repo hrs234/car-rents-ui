@@ -4,6 +4,7 @@ import { GoTrash, GoEye, GoPencil, GoPlus, GoSearch } from "react-icons/go";
 import { useRouter } from "next/router";
 import config from "@/config";
 import Link from "next/link";
+import axios from 'axios';
 
 export default function Cars() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
@@ -82,11 +83,18 @@ export default function Cars() {
 
     let deleteData = async (id = "") => {
         try {
-            const resp = await fetch(`${config.apiHost}/api/v1/cars/${id}`, {
-                method: "DELETE",
+            // const resp = await fetch(`${config.apiHost}/api/v1/cars/${id}`, {
+            //     method: "DELETE",
                 
-            });
-            const data = await resp.text();
+            // });
+            // const data = await resp.text();
+            const data = await axios.delete(`${config.apiHost}/api/v1/cars/${id}`, {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Credentials": true
+                  }
+            })
+            console.log(data);
         } catch (error) {
             console.log(error);
             alert("tidak dapat menghapus data, silahkan coba lagi");
