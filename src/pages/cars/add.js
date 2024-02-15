@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Input, Button } from "@nextui-org/react";
 import { useRouter } from "next/router";
 import config from "@/config";
+import axios from "axios";
 
 
 export default function UpsertCars() {
@@ -13,22 +14,13 @@ export default function UpsertCars() {
 
     let processData = async () => {
         try {
-            let request = {
+            const res = await axios.post(`${config.apiHost}/api/v1/cars`, {
                 car_name: carName,
                 day_rate: dayRate,
                 month_rate: monthRate,
                 image: imageLink
-            }
-    
-            const data = await fetch(`${config.apiHost}/api/v1/cars`, {
-                method: "POST",
-                body: JSON.stringify(request),
-                headers: {
-                    "Content-type": "application/json"
-                },
-                mode: "no-cors"
-            })
-            const res = await data.json();
+            });
+            console.log(res.data)
             router.push('/cars');
         } catch (error) {
             console.log(error)
@@ -49,14 +41,14 @@ export default function UpsertCars() {
                 <Input
                     autoFocus
                     label="Nama Mobil"
-                    placeholder="mohon isi nama mobil"
+                    placeholder="contoh: Mobilia"
                     variant="bordered"
                     className="pb-8"
                     onChange={(e) => setCarName(e.target.value)}
                 />
                 <Input
                     label="Harga Harian"
-                    placeholder="mohon isi harga harian"
+                    placeholder="contoh: 2000"
                     variant="bordered"
                     type="number"
                     className="pb-8"
@@ -64,7 +56,7 @@ export default function UpsertCars() {
                 />
                 <Input
                     label="Harga Bulanan"
-                    placeholder="mohon isi harga bulanan"
+                    placeholder="contoh: 2000"
                     variant="bordered"
                     type="number"
                     className="pb-8"

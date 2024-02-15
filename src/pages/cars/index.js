@@ -6,6 +6,22 @@ import config from "@/config";
 import Link from "next/link";
 import axios from 'axios';
 
+const useDebouncedValue = (inputValue, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(inputValue);
+  
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(inputValue);
+      }, delay);
+  
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [inputValue, delay]);
+  
+    return debouncedValue;
+  };
+
 export default function Cars() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [isLoading, setIsLoading] = useState(false);
@@ -17,8 +33,20 @@ export default function Cars() {
         items: [],
         message: ""
     });
+    const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
     const router = useRouter();
+    const debouncedSearch = useDebouncedValue(search, 500);
+
+    useEffect(() => {
+        getCarsData({ 
+            Page: currentPage,
+            Limit: 5,
+            Search: search
+         });
+
+    }, [debouncedSearch])
 
     let confirmationModal = ({isOpen, onOpenChange}) => {
         return(
@@ -51,10 +79,11 @@ export default function Cars() {
         )
     }
     
-    let getCarsData = async (payload = { Page: 1, Limit: 10, Search: "", Order: "ASC" }) => {
+    let getCarsData = async (payload = { Page: 1, Limit: 5, Search: "", Order: "ASC" }) => {
         let url = `${config.apiHost}/api/v1/cars`;
         let query = [];
-                
+        
+        setIsLoading(true);
         if (payload.Limit != null) {
             query.push(`Limit=${payload.Limit}`);
         }
@@ -74,33 +103,20 @@ export default function Cars() {
         if (query.length > 0) {
             url += `?${query.join("&")}`
         }
-        const resp = await fetch(url,{ 
-            method: "GET", 
-        });
-        const data = await resp.json();
-        setData(data);
+        const res = await axios.get(url);
+        setData(res.data);
+        setIsLoading(false);
     }
 
     let deleteData = async (id = "") => {
         try {
-            // const resp = await fetch(`${config.apiHost}/api/v1/cars/${id}`, {
-            //     method: "DELETE",
-                
-            // });
-            // const data = await resp.text();
-            const data = await axios.delete(`${config.apiHost}/api/v1/cars/${id}`, {
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Credentials": true
-                  }
-            })
+            const data = await axios.delete(`${config.apiHost}/api/v1/cars/${id}`);
             console.log(data);
+            getCarsData();
         } catch (error) {
             console.log(error);
             alert("tidak dapat menghapus data, silahkan coba lagi");
         }
-        
-
     }
 
     const renderTableData = () => {
@@ -145,10 +161,6 @@ export default function Cars() {
             )
         })
     }
-    
-    useEffect(() => {
-        getCarsData();
-    }, [])
 
     return(
         <>
@@ -170,8 +182,9 @@ export default function Cars() {
             <div className="flex justify-center p-8">
                 <Input
                     isClearable
-                    placeholder="Ketik untuk mencari..."
+                    placeholder="Ketik untuk mencari nama mobil..."
                     startContent={<GoSearch/>}
+                    onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
             <Table aria-label="Example static collection table">
@@ -183,13 +196,14 @@ export default function Cars() {
                     <TableColumn>BIAYA BULANAN</TableColumn>
                     <TableColumn>OPSI</TableColumn>
                 </TableHeader>
-                <TableBody>
+                <TableBody emptyContent={"Data tidak tersedia atau tidak ditemukan"} isLoading={isLoading}>
                     {renderTableData()}
                 </TableBody>
             </Table>
-            <div className="flex justify-center p-8">
-                <Pagination isCompact showControls total={10} initialPage={1} />
-            </div>
+
+            { data.items.length > 0 ? <div className="flex justify-center p-8">
+                <Pagination isCompact total={Math.ceil(data.total/data.limit)} initialPage={1} onChange={(p) => setCurrentPage(p)} />
+            </div> : null}
         </>
     )
 }
