@@ -1,46 +1,55 @@
 import { React, useEffect, useState } from "react";
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Image as Img, Pagination, Button, Tooltip, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure} from "@nextui-org/react";
 import { GoTrash, GoEye, GoPencil, GoPlus, GoSearch } from "react-icons/go";
+import { useRouter } from "next/router";
 import config from "@/config";
-import cars from "../../services/cars";
 import Link from "next/link";
-
-const carsT = new cars();
-
-let confirmationModal = ({isOpen, onOpenChange}) => {
-    return(
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Konfirmasi</ModalHeader>
-              <ModalBody>
-                <p> 
-                  Apakah anda ingin menghapus data mobil ini ?
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="default" variant="light" onPress={onClose}>
-                  Batal
-                </Button>
-                <Button color="danger" onPress={onClose}>
-                  Hapus
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    )
-}
-
-
 
 export default function Cars() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [isLoading, setIsLoading] = useState(false);
-    const [data, setData] = useState([]);
+    const [data, setData] = useState({
+        page: 0,
+        limit: 0,
+        total: 0,
+        order: "",
+        items: [],
+        message: ""
+    });
+    const [selectedId, setSelectedId] = useState('');
+    const router = useRouter();
 
+    let confirmationModal = ({isOpen, onOpenChange}) => {
+        return(
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <ModalContent>
+              {(onClose) => (
+                <>
+                  <ModalHeader className="flex flex-col gap-1">Konfirmasi</ModalHeader>
+                  <ModalBody>
+                    <p> 
+                      Apakah anda ingin menghapus data mobil dengan Id {selectedId} ?
+                    </p>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button color="default" variant="light" onPress={onClose}>
+                      Batal
+                    </Button>
+                    <Button color="danger" onPress={() => {
+                        deleteData(selectedId);
+                        setSelectedId('');
+                        onClose();
+                    }}>
+                      Hapus
+                    </Button>
+                  </ModalFooter>
+                </>
+              )}
+            </ModalContent>
+          </Modal>
+        )
+    }
+    
     let getCarsData = async (payload = { Page: 1, Limit: 10, Search: "", Order: "ASC" }) => {
         let url = `${config.apiHost}/api/v1/cars`;
         let query = [];
@@ -68,11 +77,26 @@ export default function Cars() {
             method: "GET", 
         });
         const data = await resp.json();
-        setData(data.items);
+        setData(data);
+    }
+
+    let deleteData = async (id = "") => {
+        try {
+            const resp = await fetch(`${config.apiHost}/api/v1/cars/${id}`, {
+                method: "DELETE",
+                
+            });
+            const data = await resp.text();
+        } catch (error) {
+            console.log(error);
+            alert("tidak dapat menghapus data, silahkan coba lagi");
+        }
+        
+
     }
 
     const renderTableData = () => {
-        return data.map((val, idx) => {
+        return data.items.map((val, idx) => {
             return(
                 <TableRow key="1">
                         <TableCell>{val.id}</TableCell>
@@ -90,17 +114,20 @@ export default function Cars() {
                         <TableCell>
                             <div className="flex gap-4 items-center">
                                 <Tooltip content="Lihat Detail">
-                                    <Button isIconOnly color="primary" variant="bordered" aria-label="view">
+                                    <Button isIconOnly color="primary" variant="bordered" aria-label="view" onClick={() => router.push(`/cars/${val.id}`)}>
                                         <GoEye />
                                     </Button>
                                 </Tooltip>
                                 <Tooltip content="Ubah Data">
-                                    <Button isIconOnly color="warning" variant="bordered" aria-label="update">
+                                    <Button isIconOnly color="warning" variant="bordered" aria-label="update" onClick={() => router.push(`/cars/edit/${val.id}`)}>
                                         <GoPencil />
                                     </Button>
                                 </Tooltip>
                                 <Tooltip content="Hapus Data">
-                                    <Button isIconOnly color="danger" variant="bordered" aria-label="delete" onPress={onOpen}>
+                                    <Button isIconOnly color="danger" variant="bordered" aria-label="delete" onPress={onOpen} onClick={() => {
+                                        setSelectedId(val.id);
+                                        onOpen();
+                                    }}>
                                         <GoTrash />
                                     </Button>
                                 </Tooltip>

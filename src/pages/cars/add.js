@@ -1,16 +1,40 @@
 import { useState } from "react";
 import { Input, Button } from "@nextui-org/react";
 import { useRouter } from "next/router";
+import config from "@/config";
 
 
 export default function UpsertCars() {
     const router = useRouter();
-    let [req, setReq] = useState({
-        car_name: "",
-        day_rate: 0,
-        month_rate: 0,
-        image: ""
-    });
+    let [carName, setCarName] = useState('');
+    let [dayRate, setDayRate] = useState('');
+    let [monthRate, setMonthRate] = useState(0);
+    let [imageLink, setImageLink] = useState('');
+
+    let processData = async () => {
+        try {
+            let request = {
+                car_name: carName,
+                day_rate: dayRate,
+                month_rate: monthRate,
+                image: imageLink
+            }
+    
+            const data = await fetch(`${config.apiHost}/api/v1/cars`, {
+                method: "POST",
+                body: JSON.stringify(request),
+                headers: {
+                    "Content-type": "application/json"
+                },
+                mode: "no-cors"
+            })
+            const res = await data.json();
+            router.push('/cars');
+        } catch (error) {
+            console.log(error)
+            alert("Tidak dapat menambah data");
+        }
+    }
 
     return(
         <>
@@ -28,6 +52,7 @@ export default function UpsertCars() {
                     placeholder="mohon isi nama mobil"
                     variant="bordered"
                     className="pb-8"
+                    onChange={(e) => setCarName(e.target.value)}
                 />
                 <Input
                     label="Harga Harian"
@@ -35,6 +60,7 @@ export default function UpsertCars() {
                     variant="bordered"
                     type="number"
                     className="pb-8"
+                    onChange={(e) => setDayRate(e.target.value)}
                 />
                 <Input
                     label="Harga Bulanan"
@@ -42,20 +68,20 @@ export default function UpsertCars() {
                     variant="bordered"
                     type="number"
                     className="pb-8"
+                    onChange={(e) => setMonthRate(e.target.value)}
                 />
                 <Input
+                    label="Link Gambar"
+                    placeholder="contoh: https://local.sh/gamabr.jpg"
                     variant="bordered"
-                    type="file"
                     className="pb-8"
-                    endContent={
-                        <p>Unggah Gambar</p>
-                    }
+                    onChange={(e) => setImageLink(e.target.value)}
                 />
                 <div className="flex flex-row justify-end">
                         <Button color="default" onClick={() => router.push('/cars')}>
                             Kembali
                         </Button>
-                        <Button color="success" className="ml-5">
+                        <Button color="success" className="ml-5" onClick={() => processData()}>
                             Tambahkan
                         </Button>
                 </div>
