@@ -1,38 +1,162 @@
-import React from "react";
-import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Pagination, Button, Tooltip, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure} from "@nextui-org/react";
+import { React, useEffect, useState } from "react";
+import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Image as Img, Pagination, Button, Tooltip, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure} from "@nextui-org/react";
 import { GoTrash, GoEye, GoPencil, GoPlus, GoSearch } from "react-icons/go";
+import { useRouter } from "next/router";
+import config from "@/config";
+import Link from "next/link";
+import axios from 'axios';
 
-let confirmationModal = ({isOpen, onOpenChange}) => {
-    
-
-    return(
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Konfirmasi</ModalHeader>
-              <ModalBody>
-                <p> 
-                  Apakah anda ingin menghapus data pemesanan ini ?
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="default" variant="light" onPress={onClose}>
-                  Batal
-                </Button>
-                <Button color="danger" onPress={onClose}>
-                  Hapus
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-    )
-}
+const useDebouncedValue = (inputValue, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(inputValue);
+  
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(inputValue);
+      }, delay);
+  
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [inputValue, delay]);
+  
+    return debouncedValue;
+  };
 
 export default function Orders() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [isLoading, setIsLoading] = useState(false);
+    const [data, setData] = useState({
+        page: 0,
+        limit: 0,
+        total: 0,
+        order: "",
+        items: [],
+        message: ""
+    });
+    const [search, setSearch] = useState('');
+    const [selectedId, setSelectedId] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const router = useRouter();
+    const debouncedSearch = useDebouncedValue(search, 500);
+
+    useEffect(() => {
+        getOrdersData({ 
+            Page: currentPage,
+            Limit: 5,
+            Search: search,
+            Order: "ASC"
+         });
+
+    }, [debouncedSearch])
+
+    let confirmationModal = ({isOpen, onOpenChange}) => {
+        return(
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <ModalContent>
+              {(onClose) => (
+                <>
+                  <ModalHeader className="flex flex-col gap-1">Konfirmasi</ModalHeader>
+                  <ModalBody>
+                    <p> 
+                      Apakah anda ingin menghapus data pesanan dengan Id {selectedId} ?
+                    </p>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button color="default" variant="light" onPress={onClose}>
+                      Batal
+                    </Button>
+                    <Button color="danger" onPress={() => {
+                        deleteData(selectedId);
+                        setSelectedId('');
+                        onClose();
+                    }}>
+                      Hapus
+                    </Button>
+                  </ModalFooter>
+                </>
+              )}
+            </ModalContent>
+          </Modal>
+        )
+    }
+    
+    let getOrdersData = async (payload = { Page: 1, Limit: 5, Search: "", Order: "ASC" }) => {
+        let url = `${config.apiHost}/api/v1/orders`;
+        let query = [];
+        
+        setIsLoading(true);
+        if (payload.Limit != null) {
+            query.push(`Limit=${payload.Limit}`);
+        }
+        
+        if (payload.Search != "") {
+            query.push(`Search=${payload.Search}`);
+        }
+    
+        if (payload.Page != null) {
+            query.push(`Page=${payload.Page}`);
+        }
+
+        if (payload.Order != "ASC") {
+            query.push(`Order=${payload.Order}`);
+        }
+        
+        if (query.length > 0) {
+            url += `?${query.join("&")}`
+        }
+        const res = await axios.get(url);
+        setData(res.data);
+        setIsLoading(false);
+    }
+
+    let deleteData = async (id = "") => {
+        try {
+            const data = await axios.delete(`${config.apiHost}/api/v1/orders/${id}`);
+            console.log(data);
+            getOrdersData();
+        } catch (error) {
+            console.log(error);
+            alert("tidak dapat menghapus data, silahkan coba lagi");
+        }
+    }
+
+    const renderTableData = () => {
+        return data.items.map((val, idx) => {
+            return(
+                <TableRow key="1">
+                        <TableCell>{val.id}</TableCell>
+                        <TableCell>{val.car_name}</TableCell>
+                        <TableCell>{val.order_date}</TableCell>
+                        <TableCell>{val.pickup_date}</TableCell>
+                        <TableCell>{val.dropoff_date}</TableCell>
+                        <TableCell>{val.pickup_location}</TableCell>
+                        <TableCell>{val.dropoff_location}</TableCell>
+                        <TableCell>
+                            <div className="flex gap-4 items-center">
+                                <Tooltip content="Lihat Detail">
+                                    <Button isIconOnly color="primary" variant="bordered" aria-label="view" onClick={() => router.push(`/orders/${val.id}`)}>
+                                        <GoEye />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip content="Ubah Data">
+                                    <Button isIconOnly color="warning" variant="bordered" aria-label="update" onClick={() => router.push(`/orders/edit/${val.id}`)}>
+                                        <GoPencil />
+                                    </Button>
+                                </Tooltip>
+                                <Tooltip content="Hapus Data">
+                                    <Button isIconOnly color="danger" variant="bordered" aria-label="delete" onPress={onOpen} onClick={() => {
+                                        setSelectedId(val.id);
+                                        onOpen();
+                                    }}>
+                                        <GoTrash />
+                                    </Button>
+                                </Tooltip>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+            )
+        })
+    }
 
     return(
         <>
@@ -40,67 +164,49 @@ export default function Orders() {
             <header>
                 <div className="flex justify-between mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-                        Daftar Pemesanan
+                        Daftar Pesanan
                     </h1>
                     <div>
-                        <Button size="lg" color="primary" startContent={<GoPlus/>}>
-                            Tambah Data
-                        </Button>
+                        <Link href="/orders/add">
+                            <Button size="lg" color="primary" startContent={<GoPlus/>}>
+                                Tambah Data
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </header>
             <div className="flex justify-center p-8">
                 <Input
                     isClearable
-                    placeholder="Ketik untuk mencari..."
+                    placeholder="Ketik untuk mencari lokasi jemput..."
                     startContent={<GoSearch/>}
+                    onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
             <Table aria-label="Example static collection table">
                 <TableHeader>
                     <TableColumn>ID</TableColumn>
-                    <TableColumn>CAR ID</TableColumn>
-                    <TableColumn>ORDER DATE</TableColumn>
+                    <TableColumn>NAMA MOBIL</TableColumn>
+                    <TableColumn>TGL. PEMESANAN</TableColumn>
                     <TableColumn>TGL. JEMPUT</TableColumn>
                     <TableColumn>TGL. ANTAR</TableColumn>
                     <TableColumn>LOKASI JEMPUT</TableColumn>
                     <TableColumn>LOKASI ANTAR</TableColumn>
                     <TableColumn>OPSI</TableColumn>
                 </TableHeader>
-                <TableBody>
-                    <TableRow key="1">
-                        <TableCell>1</TableCell>
-                        <TableCell>1</TableCell>
-                        <TableCell>2024-01-10</TableCell>
-                        <TableCell>2024-01-10</TableCell>
-                        <TableCell>2024-02-10</TableCell>
-                        <TableCell>Jl, kemanggisan no.10 rt.11</TableCell>
-                        <TableCell>Jl, tumenggul no.200</TableCell>
-                        <TableCell>
-                            <div className="flex gap-4 items-center">
-                                <Tooltip content="Lihat Detail">
-                                    <Button isIconOnly color="primary" variant="bordered" aria-label="view">
-                                        <GoEye />
-                                    </Button>
-                                </Tooltip>
-                                <Tooltip content="Ubah Data">
-                                    <Button isIconOnly color="warning" variant="bordered" aria-label="update">
-                                        <GoPencil />
-                                    </Button>
-                                </Tooltip>
-                                <Tooltip content="Hapus Data">
-                                    <Button isIconOnly color="danger" variant="bordered" aria-label="delete" onPress={onOpen}>
-                                        <GoTrash />
-                                    </Button>
-                                </Tooltip>
-                            </div>
-                        </TableCell>
-                    </TableRow>
+                <TableBody emptyContent={"Data tidak tersedia atau tidak ditemukan"} isLoading={isLoading}>
+                    {renderTableData()}
                 </TableBody>
             </Table>
-            <div className="flex justify-center p-8">
-                <Pagination isCompact showControls total={10} initialPage={1} />
-            </div>
+
+            { data.items.length > 0 ? <div className="flex justify-center p-8">
+                <Pagination isCompact total={Math.ceil(data.total/data.limit)} initialPage={1} onChange={(p) => getOrdersData({ 
+                    Page: p,
+                    Limit: 5,
+                    Search: search,
+                    Order: "ASC"
+                })} />
+            </div> : null}
         </>
     )
 }

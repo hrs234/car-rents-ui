@@ -202,7 +202,11 @@ export default function Cars() {
             </Table>
 
             { data.items.length > 0 ? <div className="flex justify-center p-8">
-                <Pagination isCompact total={Math.ceil(data.total/data.limit)} initialPage={1} onChange={(p) => setCurrentPage(p)} />
+                <Pagination isCompact total={Math.ceil(data.total/data.limit)} initialPage={1} onChange={(p) => getCarsData({ 
+                    Page: p,
+                    Limit: 5,
+                    Search: search
+                })} />
             </div> : null}
         </>
     )
