@@ -81,32 +81,38 @@ export default function Orders() {
     }
     
     let getOrdersData = async (payload = { Page: 1, Limit: 5, Search: "", Order: "ASC" }) => {
-        let url = `${config.apiHost}/api/v1/orders`;
-        let query = [];
+        try {
+            let url = `${config.apiHost}/api/v1/orders`;
+            let query = [];
+            
+            setIsLoading(true);
+            if (payload.Limit != null) {
+                query.push(`Limit=${payload.Limit}`);
+            }
+            
+            if (payload.Search != "") {
+                query.push(`Search=${payload.Search}`);
+            }
         
-        setIsLoading(true);
-        if (payload.Limit != null) {
-            query.push(`Limit=${payload.Limit}`);
-        }
-        
-        if (payload.Search != "") {
-            query.push(`Search=${payload.Search}`);
-        }
+            if (payload.Page != null) {
+                query.push(`Page=${payload.Page}`);
+            }
     
-        if (payload.Page != null) {
-            query.push(`Page=${payload.Page}`);
+            if (payload.Order != "ASC") {
+                query.push(`Order=${payload.Order}`);
+            }
+            
+            if (query.length > 0) {
+                url += `?${query.join("&")}`
+            }
+            const res = await axios.get(url);
+            setData(res.data);
+            setIsLoading(false);
+            
+        } catch (error) {
+            console.log(error);
+            alert('Gagal memuat data silahkan coba beberapa saat lagi')
         }
-
-        if (payload.Order != "ASC") {
-            query.push(`Order=${payload.Order}`);
-        }
-        
-        if (query.length > 0) {
-            url += `?${query.join("&")}`
-        }
-        const res = await axios.get(url);
-        setData(res.data);
-        setIsLoading(false);
     }
 
     let deleteData = async (id = "") => {
