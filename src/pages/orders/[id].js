@@ -1,8 +1,9 @@
 import config from "@/config";
-import { Button } from "@nextui-org/react"
+import { Button, CardFooter } from "@nextui-org/react"
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import {Card, CardBody, Divider, Link} from "@nextui-org/react";
  
 export default function OrderDetail() {
 
@@ -49,43 +50,47 @@ export default function OrderDetail() {
                     </h1>
                 </div>
             </header>
-                <div className="grid grid-rows">
-                    <div className="grid grid-cols-3">
-                        <div>ID Pesanan</div>
-                        <div>:</div>
-                        <div>{detailData.item.id}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Nama Mobil</div>
-                        <div>:</div>
-                        <div>{detailData.item.car_name}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Tanggal Jemput</div>
-                        <div>:</div>
-                        <div>{detailData.item.pickup_date}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Tanggal Antar</div>
-                        <div>:</div>
-                        <div>{detailData.item.dropoff_date}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Lokasi Jemput</div>
-                        <div>:</div>
-                        <div>{detailData.item.pickup_location}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Lokasi Antar</div>
-                        <div>:</div>
-                        <div>{detailData.item.dropoff_location}</div>
-                    </div>
-                    <div>
-                        <Button onClick={() => route.push('/orders')}>
+                <Card>
+                    <CardBody>
+                        <div className="grid grid-rows p-10">
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">ID Pesanan</div>
+                                <div>{detailData.item.id}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Nama Mobil</div>
+                                <div>
+                                    <Link isBlock showAnchorIcon onClick={() => route.push(`/cars/${detailData.item.car_id}`)}>
+                                        {detailData.item.car_name}
+                                    </Link>
+                                </div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Tanggal Jemput</div>
+                                <div>{detailData.item.pickup_date}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Tanggal Antar</div>
+                                <div>{detailData.item.dropoff_date}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Lokasi Jemput</div>
+                                <div>{detailData.item.pickup_location}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Lokasi Antar</div>
+                                <div>{detailData.item.dropoff_location}</div>
+                            </div>
+                        </div>
+                    </CardBody>
+                    <Divider/>
+                    <CardFooter>
+                        <Button onClick={() => route.back()}>
                             Kembali
                         </Button>
-                    </div>
-                </div>
+                    </CardFooter>
+                </Card>
+                
         </>
     );
 }

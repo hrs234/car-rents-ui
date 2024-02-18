@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Input, Button, Textarea } from "@nextui-org/react";
 import {Select, SelectItem} from "@nextui-org/react";
+import useFormOrders from "@/utils/formOrders";
 import axios from "axios";
 import config from "@/config";
 
@@ -61,16 +62,22 @@ export default function EditOrder() {
         }
     }
 
-    const updateData = async (payload) => {
+    const updateData = async () => {
         try {
-            console.log(payload);
-            const res = await axios.put(`${config.apiHost}/api/v1/orders/${id}`, payload);
+            console.log(value);
+            if (typeof(value.car_id) == "number") {
+                value.car_id = value.car_id.toString();
+            }
+            const res = await axios.put(`${config.apiHost}/api/v1/orders/${id}`, value);
             console.log(res.data);
             router.push('/orders');
         } catch (error) {
             console.log(error);
+            alert('Terjadi kesalahan, silahkan coba kembali');
         }
     }
+
+    const { value, error, handleChange, handleSubmit, handleChangeSelect } = useFormOrders(updateData, updateItem);
 
     return(
         <>
@@ -90,92 +97,86 @@ export default function EditOrder() {
                     className="pb-8"
                     value={idParam}
                 />
-                <div className="pb-3">Mobil</div>
-                <Select 
-                    placeholder="Pilih Mobil" 
-                    className="pb-8" 
-                    variant="bordered"
-                    onSelectionChange={(e) => setUpdateItem(prevState => ({
-                        ...prevState,
-                        car_id: e
-                    }))}
-                >
-                    {listCars.map((val) => (
-                        <SelectItem key={val.id} value={val.id}>
-                            {val.car_name}
-                        </SelectItem>
-                    ))}
-                </Select>
-                <div className="pb-3">Tanggal Pesan</div>
-                <Input
-                    variant="bordered"
-                    type="date"
-                    className="pb-8"
-                    value={updateItem.order_date}
-                    onChange={(e) => setUpdateItem(prevState => ({
-                        ...prevState,
-                        order_date: e.target.value
-                    }))}
-                />
-                <div className="pb-3">Tanggal Jemput</div>
-                <Input
-                    variant="bordered"
-                    type="date"
-                    className="pb-8"
-                    value={updateItem.pickup_date}
-                    onChange={(e) => setUpdateItem(prevState => ({
-                        ...prevState,
-                        pickup_date: e.target.value
-                    }))}
-                />
-                <div className="pb-3">Tanggal Antar</div>
-                <Input
-                    variant="bordered"
-                    type="date"
-                    className="pb-8"
-                    value={updateItem.dropoff_date}
-                    onChange={(e) => setUpdateItem(prevState => ({
-                        ...prevState,
-                        dropoff_date: e.target.value
-                    }))}
-                />
-                <div className="pb-3">Alamat Jemput</div>
-                <Textarea
-                    placeholder="Masukkan alamat jemput"
-                    className="pb-8"
-                    variant="bordered"
-                    value={updateItem.pickup_location}
-                    onChange={(e) => setUpdateItem(prevState => ({
-                        ...prevState,
-                        pickup_location: e.target.value
-                    }))}
-                />
-                <div className="pb-3">Alamat Antar</div>
-                <Textarea
-                    placeholder="Masukkan alamat Antar"
-                    className="pb-8"
-                    variant="bordered"
-                    value={updateItem.dropoff_location}
-                    onChange={(e) => setUpdateItem(prevState => ({
-                        ...prevState,
-                        dropoff_location: e.target.value
-                    }))}
-                />
-                <div className="flex flex-row justify-end">
-                        <Button color="default" onClick={() => router.push('/orders')}>
-                            Kembali
-                        </Button>
-                        <Button color="warning" className="ml-5" onClick={() => updateData({
-                            car_id: updateItem.car_id.currentKey,
-                            order_date: updateItem.order_date,
-                            pickup_date: updateItem.pickup_date,
-                            dropoff_date: updateItem.dropoff_date,
-                            pickup_location: updateItem.pickup_location,
-                            dropoff_location: updateItem.dropoff_location
-                        })}>
-                            Ubah
-                        </Button>
-                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="pb-3">Mobil</div>
+                    <Select 
+                        placeholder="Pilih Mobil" 
+                        className="pb-8" 
+                        variant="bordered"
+                        name="car_id"
+                        onSelectionChange={handleChangeSelect}
+                        errorMessage={error.car_id ? error.car_id : ""}
+                    >
+                        {listCars.map((val) => (
+                            <SelectItem key={val.id} value={val.id}>
+                                {val.car_name}
+                            </SelectItem>
+                        ))}
+                    </Select>
+                    <div className="pb-3">Tanggal Pesan</div>
+                    <Input
+                        variant="bordered"
+                        type="date"
+                        className="pb-8"
+                        value={value.order_date}
+                        name="order_date"
+                        isInvalid={error.order_date != undefined ? error.order_date.length > 0 : false}
+                        errorMessage={error.order_date ? error.order_date : ""}
+                        onChange={handleChange}
+                    />
+                    <div className="pb-3">Tanggal Jemput</div>
+                    <Input
+                        variant="bordered"
+                        type="date"
+                        className="pb-8"
+                        name="pickup_date"
+                        isInvalid={error.pickup_date != undefined ? error.pickup_date.length > 0 : false}
+                        errorMessage={error.pickup_date ? error.pickup_date : ""}
+                        value={value.pickup_date}
+                        onChange={handleChange}
+                    />
+                    <div className="pb-3">Tanggal Antar</div>
+                    <Input
+                        variant="bordered"
+                        type="date"
+                        className="pb-8"
+                        value={value.dropoff_date}
+                        name="dropoff_date"
+                        isInvalid={error.dropoff_date != undefined ? error.dropoff_date.length > 0 : false}
+                        errorMessage={error.dropoff_date ? error.dropoff_date : ""}
+                        onChange={handleChange}
+                    />
+                    <div className="pb-3">Alamat Jemput</div>
+                    <Textarea
+                        placeholder="Masukkan alamat jemput"
+                        className="pb-8"
+                        variant="bordered"
+                        name="pickup_location"
+                        isInvalid={error.pickup_location != undefined ? error.pickup_location.length > 0 : false}
+                        errorMessage={error.pickup_location ? error.pickup_location : ""}
+                        value={value.pickup_location}
+                        onChange={handleChange}
+                    />
+                    <div className="pb-3">Alamat Antar</div>
+                    <Textarea
+                        placeholder="Masukkan alamat Antar"
+                        className="pb-8"
+                        variant="bordered"
+                        value={value.dropoff_location}
+                        name="dropoff_location"
+                        isInvalid={error.dropoff_location != undefined ? error.dropoff_location.length > 0 : false}
+                        errorMessage={error.dropoff_location ? error.dropoff_location : ""}
+                        onChange={handleChange}
+                    />
+                    <div className="flex flex-row justify-end">
+                            <Button color="default" onClick={() => router.back()}>
+                                Kembali
+                            </Button>
+                            <Button color="warning" className="ml-5" type="submit">
+                                Ubah
+                            </Button>
+                    </div>
+                </form>
             </div>
         </>
     );

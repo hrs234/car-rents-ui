@@ -3,7 +3,6 @@ import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Image a
 import { GoTrash, GoEye, GoPencil, GoPlus, GoSearch } from "react-icons/go";
 import { useRouter } from "next/router";
 import config from "@/config";
-import Link from "next/link";
 import axios from 'axios';
 
 const useDebouncedValue = (inputValue, delay) => {
@@ -179,11 +178,9 @@ export default function Cars() {
                         Daftar Mobil
                     </h1>
                     <div>
-                        <Link href="/cars/add">
-                            <Button size="lg" color="primary" startContent={<GoPlus/>}>
-                                Tambah Data
-                            </Button>
-                        </Link>
+                        <Button size="lg" color="primary" startContent={<GoPlus/>} onClick={() => router.push('/cars/add')}>
+                            Tambah Data
+                        </Button>
                     </div>
                 </div>
             </header>

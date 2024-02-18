@@ -3,7 +3,7 @@ import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Image a
 import { GoTrash, GoEye, GoPencil, GoPlus, GoSearch } from "react-icons/go";
 import { useRouter } from "next/router";
 import config from "@/config";
-import Link from "next/link";
+import {Link} from "@nextui-org/react";
 import axios from 'axios';
 
 const useDebouncedValue = (inputValue, delay) => {
@@ -131,7 +131,11 @@ export default function Orders() {
             return(
                 <TableRow key="1">
                         <TableCell>{val.id}</TableCell>
-                        <TableCell>{val.car_name}</TableCell>
+                        <TableCell>
+                            <Link isBlock showAnchorIcon onClick={() => router.push(`/cars/${val.car_id}`)}>
+                                {val.car_name}
+                            </Link>
+                        </TableCell>
                         <TableCell>{val.order_date}</TableCell>
                         <TableCell>{val.pickup_date}</TableCell>
                         <TableCell>{val.dropoff_date}</TableCell>
@@ -173,11 +177,9 @@ export default function Orders() {
                         Daftar Pesanan
                     </h1>
                     <div>
-                        <Link href="/orders/add">
-                            <Button size="lg" color="primary" startContent={<GoPlus/>}>
-                                Tambah Data
-                            </Button>
-                        </Link>
+                        <Button size="lg" color="primary" onClick={() => router.push('/orders/add')} startContent={<GoPlus/>}>
+                            Tambah Data
+                        </Button>
                     </div>
                 </div>
             </header>

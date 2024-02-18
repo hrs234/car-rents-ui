@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { omit } from "lodash";
 
 const useFormCars = (callback, defaultValue) => {
     const [value, setValue] = useState({
@@ -49,8 +48,10 @@ const useFormCars = (callback, defaultValue) => {
                     });
                 } else {
                     // remove the error
-                    let newObject = omit(error, "car_name");
-                    setError(newObject);
+                    setError({
+                        ...error,
+                        car_name: ""
+                    });
                 }    
             break;
             case "day_rate":
@@ -61,8 +62,10 @@ const useFormCars = (callback, defaultValue) => {
                     });
                 } else {
                     // remove the error
-                    let newObject = omit(error, "day_rate");
-                    setError(newObject);
+                    setError({
+                        ...error,
+                        day_rate: ""
+                    });
                 } 
             break;
             case "month_rate":
@@ -73,8 +76,10 @@ const useFormCars = (callback, defaultValue) => {
                     });
                 } else {
                     // remove the error
-                    let newObject = omit(error, "month_rate");
-                    setError(newObject);
+                    setError({
+                        ...error,
+                        month_rate: ""
+                    });
                 } 
             break;
             case "image":
@@ -90,8 +95,10 @@ const useFormCars = (callback, defaultValue) => {
                     });
                 } else {
                     // remove the error
-                    let newObject = omit(error, "image");
-                    setError(newObject);
+                    setError({
+                        ...error,
+                        image: ""
+                    });
                 } 
             break;
             default:
@@ -103,13 +110,19 @@ const useFormCars = (callback, defaultValue) => {
         if(e) e.preventDefault();
 
         let blankCount = 0;
+        let errorCount = 0;
         // check is there any blank field ?
         Object.keys(value).forEach(val => {
             if (value[val] === "") {
                 blankCount += 1;
             }
         });
-        if (blankCount > 0) {
+        Object.keys(error).forEach(val => {
+            if (error[val] !== "") {
+                errorCount += 1;
+            }
+        })
+        if (blankCount > 0 || errorCount > 0) {
             setError({
                 car_name: value.car_name.length <= 0 ? "Nama mobil wajib diisi" : error.car_name,
                 day_rate: value.day_rate <= 0  ? "harga harian wajib diisi" : error.day_rate,

@@ -1,8 +1,9 @@
-import { Button, Image } from "@nextui-org/react"
+import { Button, CardFooter, Divider, Image } from "@nextui-org/react"
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import config from "@/config";
+import {Card, CardBody} from "@nextui-org/react";
  
 export default function CarsDetail() {
     const route = useRouter();
@@ -55,28 +56,39 @@ export default function CarsDetail() {
                         src={detailData.item.image}
                     />
                 </div>
-                <div className="grid grid-rows">
-                    <div className="grid grid-cols-3 h-[1px]">
-                        <div>Nama Mobil</div>
-                        <div>:</div>
-                        <div>{detailData.item.car_name}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Biaya Harian</div>
-                        <div>:</div>
-                        <div>Rp. {detailData.item.day_rate}</div>
-                    </div>
-                    <div className="grid grid-cols-3">
-                        <div>Biaya Bulanan</div>
-                        <div>:</div>
-                        <div>Rp. {detailData.item.month_rate}</div>
-                    </div>
-                    <div>
-                        <Button onClick={() => route.push('/cars')}>
-                            Kembali
-                        </Button>
-                    </div>
-                </div>
+                <Card>
+                    <CardBody>
+                        <div className="grid grid-rows p-10">
+                        <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">ID Mobil</div>
+                                <div>{detailData.item.id}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Nama Mobil</div>
+                                <div>{detailData.item.car_name}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Biaya Harian</div>
+                                <div>Rp. {detailData.item.day_rate}</div>
+                            </div>
+                            <div className="pb-6">
+                                <div className="pb-3 text-zinc-400 text-lg">Biaya Bulanan</div>
+                                <div>Rp. {detailData.item.month_rate}</div>
+                            </div>
+                        </div>      
+                    </CardBody>
+                    <Divider/>
+                    <CardFooter>
+                        <div className="flex flex-row">
+                            <div className="justify-items-end">
+                                <Button onClick={() => route.back()}>
+                                    Kembali
+                                </Button>
+                            </div>
+                        </div>
+                    </CardFooter>
+                </Card>
+                
             </div>
         </>
     );
