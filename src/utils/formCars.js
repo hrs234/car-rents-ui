@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { omit } from "lodash";
 
-const useFormCars = (callback) => {
+const useFormCars = (callback, defaultValue) => {
     const [value, setValue] = useState({
         car_name: "",
         day_rate: 0,
@@ -14,6 +14,11 @@ const useFormCars = (callback) => {
         month_rate: "",
         image: ""
     });
+
+    useEffect(() => {
+        if (!defaultValue) return
+        setValue(defaultValue);
+    }, [defaultValue]);
 
     const handleChange = (e) => {
         e.persist();
@@ -110,7 +115,7 @@ const useFormCars = (callback) => {
                 day_rate: value.day_rate <= 0  ? "harga harian wajib diisi" : error.day_rate,
                 month_rate: value.month_rate <= 0 ? "harga bulanan wajib diisi" : error.month_rate,
                 image: value.image.length <= 0 ? "link gambar wajib diisi" : error.image
-            })
+            });
             return;
         }
         callback();
