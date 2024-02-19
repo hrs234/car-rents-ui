@@ -4,6 +4,7 @@ import { GoTrash, GoEye, GoPencil, GoPlus, GoSearch } from "react-icons/go";
 import { useRouter } from "next/router";
 import config from "@/config";
 import axios from 'axios';
+import {Select, SelectItem} from "@nextui-org/react";
 
 const useDebouncedValue = (inputValue, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(inputValue);
@@ -192,6 +193,22 @@ export default function Cars() {
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
+            {/* <div className="pl-8 pb-6">
+            <Select 
+                label="Urutkan dari" 
+                className="max-w-xs" 
+            >
+                <SelectItem key={"car_name"} value={"car_name"}>
+                    Nama Mobil
+                </SelectItem>
+                <SelectItem key={"day_rate"} value={"day_rate"}>
+                    Harga Harian
+                </SelectItem>
+                <SelectItem key={"month_rate"} value={"month_rate"}>
+                    Harga Bulanan
+                </SelectItem>
+            </Select>
+            </div> */}
             <Table aria-label="Example static collection table">
                 <TableHeader>
                     <TableColumn>ID</TableColumn>

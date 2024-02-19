@@ -45,8 +45,8 @@ const useFormOrders = (callback, defaultValue) => {
             car_id:e.currentKey
         });
     }
-
-    const validate = (e, name, value) => {
+    
+    const validate = async (e, name, value) => {
         switch (name) {
             case "car_id":
                 if (value < 1) {

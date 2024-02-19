@@ -24,8 +24,35 @@ export default function AddOrder() {
         }
     }
 
+    const checkCarsAvailability = async (val = {car_id: "", pickup_date: ""}) => {
+        try {
+            const resCheck = await axios.get(`${config.apiHost}/api/v1/check-occupied-cars/${val.car_id}/${val.pickup_date}`);
+            if (resCheck.data.message == "car-already-occupied") {
+                return {
+                    isAvailable: false,
+                    error: "Mobil sudah dipesan, silahkan cari mobil lain atau ganti tanggal jemput"
+                };
+            }
+            return {
+                isAvailable: true,
+                error: ""
+            };
+        } catch (error) {
+            return {
+                isAvailable: false,
+                error: "Gagal melakukan pengecekan, silahkan coba kembali"
+            };
+        }
+    }
+
     let addOrders = async () => {
         console.log(value);
+        let data = await checkCarsAvailability({ car_id: value.car_id, pickup_date: value.pickup_date });
+        if (!data.isAvailable) {
+            alert(data.error);
+            return;
+        }
+
         try {
             const res = await axios.post(`${config.apiHost}/api/v1/orders`, value);
             console.log(res.data);
