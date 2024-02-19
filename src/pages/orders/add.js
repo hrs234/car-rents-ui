@@ -4,9 +4,11 @@ import { useRouter } from "next/router";
 import useFormOrders from "@/utils/formOrders";
 import config from "@/config";
 import axios from "axios";
+import errorCode from "@/utils/translateErrorCode";
 
 export default function AddOrder() {
     const router = useRouter();
+    const { translate } = errorCode();
     let [carsListData, setCarsListData] = useState([]);
 
     useEffect(() => {
@@ -24,42 +26,15 @@ export default function AddOrder() {
         }
     }
 
-    const checkCarsAvailability = async (val = {car_id: "", pickup_date: ""}) => {
-        try {
-            const resCheck = await axios.get(`${config.apiHost}/api/v1/check-occupied-cars/${val.car_id}/${val.pickup_date}`);
-            if (resCheck.data.message == "car-already-occupied") {
-                return {
-                    isAvailable: false,
-                    error: "Mobil sudah dipesan, silahkan cari mobil lain atau ganti tanggal jemput"
-                };
-            }
-            return {
-                isAvailable: true,
-                error: ""
-            };
-        } catch (error) {
-            return {
-                isAvailable: false,
-                error: "Gagal melakukan pengecekan, silahkan coba kembali"
-            };
-        }
-    }
-
     let addOrders = async () => {
         console.log(value);
-        let data = await checkCarsAvailability({ car_id: value.car_id, pickup_date: value.pickup_date });
-        if (!data.isAvailable) {
-            alert(data.error);
-            return;
-        }
-
         try {
             const res = await axios.post(`${config.apiHost}/api/v1/orders`, value);
             console.log(res.data);
             router.push('/orders');
         } catch (error) {
-            alert("Terjadi kesalahan, silahkan coba kembali");
-            console.log(error);
+            alert(translate(error.response.data.message ? error.response.data.message : "Terjadi kesalahan silahkan coba kembali"));
+            console.log(error.response.data);
         }
     }
 

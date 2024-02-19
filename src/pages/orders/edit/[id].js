@@ -5,10 +5,12 @@ import {Select, SelectItem} from "@nextui-org/react";
 import useFormOrders from "@/utils/formOrders";
 import axios from "axios";
 import config from "@/config";
+import errorCode from "@/utils/translateErrorCode";
 
 
 export default function EditOrder() {
     const router = useRouter();
+    const { translate } = errorCode();
     let [idParam, setIdParam] = useState("");
     let [updateItem, setUpdateItem] = useState({
         car_id: 0,
@@ -68,12 +70,21 @@ export default function EditOrder() {
             if (typeof(value.car_id) == "number") {
                 value.car_id = value.car_id.toString();
             }
-            const res = await axios.put(`${config.apiHost}/api/v1/orders/${id}`, value);
+
+            // check difference between changed data or not 
+            const res = await axios.put(`${config.apiHost}/api/v1/orders/${id}`, {
+                car_id: value.car_id,
+                order_date: value.order_date,
+                pickup_date: value.pickup_date,
+                dropoff_date: value.dropoff_date,
+                pickup_location: updateItem.pickup_location == value.pickup_location ? "" : value.pickup_location,
+                dropoff_location:  updateItem.dropoff_location == value.dropoff_location ? "" : value.dropoff_location
+            });
             console.log(res.data);
             router.push('/orders');
         } catch (error) {
-            console.log(error);
-            alert('Terjadi kesalahan, silahkan coba kembali');
+            console.log(error.response.data);
+            alert(translate(error.response.data.message ? error.response.data.message : "Terjadi kesalahan silahkan coba kembali"));
         }
     }
 
